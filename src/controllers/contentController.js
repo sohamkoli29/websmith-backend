@@ -1219,57 +1219,79 @@ export const contentController = {
   // ==================== STATISTICS ====================
 
   // Get dashboard statistics
-  async getStats(req, res, next) {
-    try {
-      // Get counts for each content type
-      const [
-        projectsCount,
-        blogsCount,
-        messagesCount,
-        testimonialsCount,
-        skillsCount,
-        unreadMessages
-      ] = await Promise.all([
-        supabase.from('projects').select('id', { count: 'exact', head: true }),
-        supabase.from('blogs').select('id', { count: 'exact', head: true }),
-        supabase.from('messages').select('id', { count: 'exact', head: true }),
-        supabase.from('testimonials').select('id', { count: 'exact', head: true }),
-        supabase.from('skills').select('id', { count: 'exact', head: true }),
-        supabase.from('messages').select('id', { count: 'exact', head: true }).eq('read', false)
-      ]);
+async getStats(req, res, next) {
+  try {
+    // Get counts for each content type
+    const [
+      projectsCount,
+      blogsCount,
+      messagesCount,
+      testimonialsCount,
+      skillsCount,
+      certificatesCount,
+      achievementsCount,
+      unreadMessages
+    ] = await Promise.all([
+      supabase.from('projects').select('id', { count: 'exact', head: true }),
+      supabase.from('blogs').select('id', { count: 'exact', head: true }),
+      supabase.from('messages').select('id', { count: 'exact', head: true }),
+      supabase.from('testimonials').select('id', { count: 'exact', head: true }),
+      supabase.from('skills').select('id', { count: 'exact', head: true }),
+      supabase.from('certificates').select('id', { count: 'exact', head: true }),
+      supabase.from('achievements').select('id', { count: 'exact', head: true }),
+      supabase.from('messages').select('id', { count: 'exact', head: true }).eq('read', false)
+    ]);
 
-      // Get recent activities
-      const { data: recentMessages } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
+    // Get recent activities
+    const { data: recentMessages } = await supabase
+      .from('messages')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5);
 
-      const { data: recentBlogs } = await supabase
-        .from('blogs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
+    const { data: recentBlogs } = await supabase
+      .from('blogs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5);
 
-      res.status(200).json({
-        success: true,
-        data: {
-          counts: {
-            projects: projectsCount.count || 0,
-            blogs: blogsCount.count || 0,
-            messages: messagesCount.count || 0,
-            testimonials: testimonialsCount.count || 0,
-            skills: skillsCount.count || 0,
-            unreadMessages: unreadMessages.count || 0
-          },
-          recent: {
-            messages: recentMessages || [],
-            blogs: recentBlogs || []
-          }
+    // Get recent certificates
+    const { data: recentCertificates } = await supabase
+      .from('certificates')
+      .select('*')
+      .order('issue_date', { ascending: false })
+      .limit(3);
+
+    // Get recent achievements
+    const { data: recentAchievements } = await supabase
+      .from('achievements')
+      .select('*')
+      .order('achievement_date', { ascending: false })
+      .limit(3);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        counts: {
+          projects: projectsCount.count || 0,
+          blogs: blogsCount.count || 0,
+          messages: messagesCount.count || 0,
+          testimonials: testimonialsCount.count || 0,
+          skills: skillsCount.count || 0,
+          certificates: certificatesCount.count || 0,
+          achievements: achievementsCount.count || 0,
+          unreadMessages: unreadMessages.count || 0
+        },
+        recent: {
+          messages: recentMessages || [],
+          blogs: recentBlogs || [],
+          certificates: recentCertificates || [],
+          achievements: recentAchievements || []
         }
-      });
-    } catch (error) {
-      next(error);
-    }
+      }
+    });
+  } catch (error) {
+    next(error);
   }
+}
 };

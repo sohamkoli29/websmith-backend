@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import contentRoutes from './routes/content.js';
 import uploadRoutes from './routes/upload.js';
+import certificatesRoutes from './routes/certificates.js';  // NEW
+import achievementsRoutes from './routes/achievements.js';  // NEW
 import seedAdminUser from './utils/seedAdmin.js';
 import { sanitizeInput } from './middleware/validate.js';
 import { ensureBuckets } from './config/storage.js';
@@ -20,38 +22,31 @@ const app = express();
 // CORS configuration - Allow all origins for development
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // List of allowed origins
     const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : [];
+      ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+      : [];
     
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
-    // If you want to allow all origins in development (not recommended for production)
     if (process.env.NODE_ENV === 'development') {
       console.log(`Allowing CORS for origin: ${origin}`);
       return callback(null, true);
     }
     
-    // For production, you should specify your actual frontend URL
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400, // 24 hours
+  maxAge: 86400,
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
-
-// Handle preflight requests
 app.options('*', cors(corsOptions));
 
 // Middleware
@@ -81,6 +76,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/certificates', certificatesRoutes);      // NEW
+app.use('/api/achievements', achievementsRoutes);      // NEW
 
 // Seed admin user on startup (in development)
 if (process.env.NODE_ENV === 'development') {
@@ -105,7 +102,6 @@ app.use('*', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
   
-  // Handle CORS errors
   if (err.message === 'Not allowed by CORS') {
     return res.status(403).json({
       success: false,
@@ -114,7 +110,6 @@ app.use((err, req, res, next) => {
     });
   }
 
-  // Handle multer errors
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(400).json({
       success: false,

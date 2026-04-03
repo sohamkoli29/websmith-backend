@@ -61,15 +61,24 @@ app.use((req, res, next) => {
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    service: 'Portfolio CMS API',
-    version: '1.0.0',
-    cors: 'enabled',
-    allowedOrigins: corsOptions.origin.toString()
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Lightweight ping to keep Supabase active
+    await supabase.from('users').select('id').limit(1);
+    
+    res.status(200).json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      service: 'Portfolio CMS API',
+      db: 'connected'
+    });
+  } catch (err) {
+    res.status(200).json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      db: 'unreachable'
+    });
+  }
 });
 
 // API Routes

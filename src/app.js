@@ -11,6 +11,7 @@ import achievementsRoutes from './routes/achievements.js';  // NEW
 import seedAdminUser from './utils/seedAdmin.js';
 import { sanitizeInput } from './middleware/validate.js';
 import { ensureBuckets } from './config/storage.js';
+import { supabase } from './config/supabase.js'; 
 
 dotenv.config();
 
@@ -63,23 +64,14 @@ app.use((req, res, next) => {
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
-    // Lightweight ping to keep Supabase active
-    await supabase.from('users').select('id').limit(1);
-    
-    res.status(200).json({ 
-      status: 'OK', 
-      timestamp: new Date().toISOString(),
-      service: 'Portfolio CMS API',
-      db: 'connected'
-    });
+    await supabase.from('test').select('message').limit(1).single();
+    res.status(200).json({ alive: true, db: 'connected' });
   } catch (err) {
-    res.status(200).json({ 
-      status: 'OK', 
-      timestamp: new Date().toISOString(),
-      db: 'unreachable'
-    });
+    res.status(200).json({ alive: true, db: 'error' });
   }
 });
+//  GET /api/test  — no auth, safe to expose
+
 
 // API Routes
 app.use('/api/auth', authRoutes);

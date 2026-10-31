@@ -124,6 +124,42 @@ Add any additional variables your code reads (database URI, JWT secret, storage 
 # DATABASE_URL=...
 # JWT_SECRET=...
 ```
+## Supabase Database Setup
+
+Follow these steps to set up the WebSmith database structure in your own Supabase project.
+
+### 1. Install Supabase CLI
+
+```bash
+npm install -g supabase
+```
+
+### 2. Login to Supabase
+
+```bash
+supabase login
+```
+
+### 3. Link your Supabase project
+
+Replace `YOUR_PROJECT_ID` with your Supabase project reference ID.
+
+```bash
+supabase link --project-ref YOUR_PROJECT_ID
+```
+
+### 4. Push the database structure
+
+```bash
+supabase db push
+```
+
+This applies the project's pending database migrations to your linked Supabase database.
+
+**Note:** Make sure the repository contains the required SQL migration files inside `supabase/migrations/` before running `supabase db push`. The `full_schema.sql` file alone is not automatically applied by this command.
+
+Each developer must link their own Supabase project and use their own credentials.
+
 
 ---
 
